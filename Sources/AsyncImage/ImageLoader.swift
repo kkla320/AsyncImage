@@ -13,13 +13,13 @@ class ImageLoader: ObservableObject {
     
     private(set) var isLoading = false
     
-    private let url: URL
+    private let source: ImageSource
     private var cancellable: AnyCancellable?
     
     private static let imageProcessingQueue = DispatchQueue(label: "image-processing")
     
-    init(url: URL) {
-        self.url = url
+    init(source: ImageSource) {
+        self.source = source
     }
     
     deinit {
@@ -36,15 +36,9 @@ class ImageLoader: ObservableObject {
 //            return
 //        }
         
-        cancellable = URLSession.shared.dataTaskPublisher(for: url)
-            .map { UIImage(data: $0.data) }
-            .map { image in
-                guard let image = image else {
-                    return ImageLoaderResult.empty
-                }
-                
-                return ImageLoaderResult.success(image)
-            }
+        cancellable = source
+            .imagePublisher()
+            .map { ImageLoaderResult.success($0) }
             .catch { Just(ImageLoaderResult.failure($0)) }
             .subscribe(on: Self.imageProcessingQueue)
             .receive(on: DispatchQueue.main)

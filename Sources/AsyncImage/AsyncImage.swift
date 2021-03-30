@@ -13,7 +13,16 @@ public struct AsyncImage<Content, Loading, Failure>: View where Content: View, L
         @ViewBuilder loading: @escaping () -> Loading,
         @ViewBuilder failure: @escaping (Error) -> Failure
     ) {
-        _loader = StateObject(wrappedValue: ImageLoader(url: url))
+        self.init(imageSource: URLImageSource(url: url), content: content, loading: loading, failure: failure)
+    }
+    
+    public init(
+        imageSource: ImageSource,
+        @ViewBuilder content: @escaping (UIImage) -> Content,
+        @ViewBuilder loading: @escaping () -> Loading,
+        @ViewBuilder failure: @escaping (Error) -> Failure
+    ) {
+        _loader = StateObject(wrappedValue: ImageLoader(source: imageSource))
         self.content = content
         self.loading = loading
         self.failure = failure
