@@ -1,7 +1,9 @@
 import SwiftUI
 
-public struct AsyncImage<Source, Cache, Content, Loading, Failure>: View where Source: ImageSource, Cache: ImageCache, Source.Key == Cache.Key, Content: View, Loading: View, Failure: View {
-    @StateObject private var loader: ImageLoader<Source, Cache>
+public struct AsyncImage<Source, Content, Loading, Failure>: View where Source: ImageSource, Content: View, Loading: View, Failure: View {
+    @Environment(\.imageCache) private var imageCache: EquatableImageCache?
+    
+    @StateObject private var loader: ImageLoader<Source>
     
     private let content: (UIImage) -> Content
     private let loading: () -> Loading
@@ -9,12 +11,11 @@ public struct AsyncImage<Source, Cache, Content, Loading, Failure>: View where S
     
     public init(
         imageSource: Source,
-        imageCache: Cache? = nil,
         @ViewBuilder content: @escaping (UIImage) -> Content,
         @ViewBuilder loading: @escaping () -> Loading,
         @ViewBuilder failure: @escaping (Error) -> Failure
     ) {
-        _loader = StateObject(wrappedValue: ImageLoader(source: imageSource, cache: imageCache))
+        _loader = StateObject(wrappedValue: ImageLoader(source: imageSource))
         self.content = content
         self.loading = loading
         self.failure = failure
@@ -31,18 +32,22 @@ public struct AsyncImage<Source, Cache, Content, Loading, Failure>: View where S
                 loading()
             }
         }
-        .onAppear(perform: loader.load)
+        .onAppear {
+            loader.load()
+        }
+        .onChange(of: imageCache) { newValue in
+            loader.cache = newValue
+        }
     }
 }
 
 extension AsyncImage where Source == URLImageSource {
     public init(
         url: URL,
-        imageCache: Cache? = nil,
         @ViewBuilder content: @escaping (UIImage) -> Content,
         @ViewBuilder loading: @escaping () -> Loading,
         @ViewBuilder failure: @escaping (Error) -> Failure
     ) {
-        self.init(imageSource: URLImageSource(url: url), imageCache: imageCache, content: content, loading: loading, failure: failure)
+        self.init(imageSource: URLImageSource(url: url), content: content, loading: loading, failure: failure)
     }
 }

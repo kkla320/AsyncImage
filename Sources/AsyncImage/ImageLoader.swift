@@ -12,18 +12,15 @@ extension DispatchQueue {
     static let imageProcessingQueue = DispatchQueue(label: "image-processing")
 }
 
-class ImageLoader<Source, Cache>: ObservableObject where Source: ImageSource, Cache: ImageCache, Source.Key == Cache.Key {
+class ImageLoader<Source>: ObservableObject where Source: ImageSource {
     @Published var result: ImageLoaderResult = .pending
     
-    private(set) var isLoading = false
-    
     private let source: Source
-    private var cache: Cache?
+    var cache: ImageCache?
     private var cancellable: AnyCancellable?
     
-    init(source: Source, cache: Cache?) {
+    init(source: Source) {
         self.source = source
-        self.cache = cache
     }
     
     deinit {
@@ -42,18 +39,14 @@ class ImageLoader<Source, Cache>: ObservableObject where Source: ImageSource, Ca
         
         cancellable = source
             .imagePublisher()
-            .handleEvents(receiveOutput: { [weak self] image in
-                self?.cache(image)
+            .handleEvents(receiveOutput: { [weak self, source] image in
+                self?.cache?[source.key] = image
             })
             .map { ImageLoaderResult.success($0) }
             .catch { Just(ImageLoaderResult.failure($0)) }
             .subscribe(on: DispatchQueue.imageProcessingQueue)
             .receive(on: DispatchQueue.main)
             .sink { [weak self] in self?.result = $0 }
-    }
-    
-    private func cache(_ image: UIImage?) {
-        image.map { cache?[source.key] = $0 }
     }
 }
 
