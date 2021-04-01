@@ -1,28 +1,20 @@
 import SwiftUI
 
-public struct AsyncImage<Content, Loading, Failure>: View where Content: View, Loading: View, Failure: View {
-    @StateObject private var loader: ImageLoader
+public struct AsyncImage<Source, Cache, Content, Loading, Failure>: View where Source: ImageSource, Cache: ImageCache, Source.Key == Cache.Key, Content: View, Loading: View, Failure: View {
+    @StateObject private var loader: ImageLoader<Source, Cache>
     
     private let content: (UIImage) -> Content
     private let loading: () -> Loading
     private let failure: (Error) -> Failure
     
     public init(
-        url: URL,
+        imageSource: Source,
+        imageCache: Cache? = nil,
         @ViewBuilder content: @escaping (UIImage) -> Content,
         @ViewBuilder loading: @escaping () -> Loading,
         @ViewBuilder failure: @escaping (Error) -> Failure
     ) {
-        self.init(imageSource: URLImageSource(url: url), content: content, loading: loading, failure: failure)
-    }
-    
-    public init(
-        imageSource: ImageSource,
-        @ViewBuilder content: @escaping (UIImage) -> Content,
-        @ViewBuilder loading: @escaping () -> Loading,
-        @ViewBuilder failure: @escaping (Error) -> Failure
-    ) {
-        _loader = StateObject(wrappedValue: ImageLoader(source: imageSource))
+        _loader = StateObject(wrappedValue: ImageLoader(source: imageSource, cache: imageCache))
         self.content = content
         self.loading = loading
         self.failure = failure
@@ -40,5 +32,17 @@ public struct AsyncImage<Content, Loading, Failure>: View where Content: View, L
             }
         }
         .onAppear(perform: loader.load)
+    }
+}
+
+extension AsyncImage where Source == URLImageSource {
+    public init(
+        url: URL,
+        imageCache: Cache? = nil,
+        @ViewBuilder content: @escaping (UIImage) -> Content,
+        @ViewBuilder loading: @escaping () -> Loading,
+        @ViewBuilder failure: @escaping (Error) -> Failure
+    ) {
+        self.init(imageSource: URLImageSource(url: url), imageCache: imageCache, content: content, loading: loading, failure: failure)
     }
 }

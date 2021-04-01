@@ -8,18 +8,22 @@
 import Combine
 import SwiftUI
 
-class ImageLoader: ObservableObject {
-    @Published var result: ImageLoaderResult = .empty
+extension DispatchQueue {
+    static let imageProcessingQueue = DispatchQueue(label: "image-processing")
+}
+
+class ImageLoader<Source, Cache>: ObservableObject where Source: ImageSource, Cache: ImageCache, Source.Key == Cache.Key {
+    @Published var result: ImageLoaderResult = .pending
     
     private(set) var isLoading = false
     
-    private let source: ImageSource
+    private let source: Source
+    private let cache: Cache?
     private var cancellable: AnyCancellable?
     
-    private static let imageProcessingQueue = DispatchQueue(label: "image-processing")
-    
-    init(source: ImageSource) {
+    init(source: Source, cache: Cache?) {
         self.source = source
+        self.cache = cache
     }
     
     deinit {
@@ -27,20 +31,20 @@ class ImageLoader: ObservableObject {
     }
     
     func load() {
-        guard !isLoading else {
+        guard result == .pending else {
             return
         }
 
-//        if let image = cache?[url] {
-//            self.image = image
-//            return
-//        }
+        if let image = cache?[source.key] {
+            self.result = .success(image)
+            return
+        }
         
         cancellable = source
             .imagePublisher()
             .map { ImageLoaderResult.success($0) }
             .catch { Just(ImageLoaderResult.failure($0)) }
-            .subscribe(on: Self.imageProcessingQueue)
+            .subscribe(on: DispatchQueue.imageProcessingQueue)
             .receive(on: DispatchQueue.main)
             .sink { [weak self] in self?.result = $0 }
     }
@@ -48,7 +52,27 @@ class ImageLoader: ObservableObject {
 
 enum ImageLoaderResult {
     case empty
+    case pending
     case loading
     case failure(Error)
     case success(UIImage)
+}
+
+extension ImageLoaderResult: Equatable {
+    static func == (lhs: ImageLoaderResult, rhs: ImageLoaderResult) -> Bool {
+        switch (lhs, rhs) {
+        case (.empty, .empty):
+            return true
+        case (.pending, .pending):
+            return true
+        case (.loading, .loading):
+            return true
+        case (.failure(_), .failure(_)):
+            return true
+        case (.success(let lhsImage), .success(let rhsImage)):
+            return lhsImage == rhsImage
+        default:
+            return false
+        }
+    }
 }

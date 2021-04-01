@@ -9,5 +9,9 @@ import SwiftUI
 import Combine
 
 public protocol ImageSource {
+    associatedtype Key
+    
+    var key: Key { get }
+    
     func imagePublisher() -> AnyPublisher<UIImage, Error>
 }

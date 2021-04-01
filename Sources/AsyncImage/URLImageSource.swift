@@ -9,22 +9,18 @@ import Foundation
 import Combine
 import SwiftUI
 
-class URLImageSource: ImageSource {
+public class URLImageSource: ImageSource {
     private var url: URL
+    
+    public var key: URL {
+        return url
+    }
     
     init(url: URL) {
         self.url = url
     }
     
-    static func == (lhs: URLImageSource, rhs: URLImageSource) -> Bool {
-        return lhs.url == rhs.url
-    }
-    
-    func hash(into hasher: inout Hasher) {
-        url.hash(into: &hasher)
-    }
-    
-    func imagePublisher() -> AnyPublisher<UIImage, Error> {
+    public func imagePublisher() -> AnyPublisher<UIImage, Error> {
         return URLSession.shared.dataTaskPublisher(for: url)
             .tryMap { response in
                 guard let image = UIImage(data: response.data) else {
