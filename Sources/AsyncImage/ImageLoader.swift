@@ -18,7 +18,7 @@ class ImageLoader<Source, Cache>: ObservableObject where Source: ImageSource, Ca
     private(set) var isLoading = false
     
     private let source: Source
-    private let cache: Cache?
+    private var cache: Cache?
     private var cancellable: AnyCancellable?
     
     init(source: Source, cache: Cache?) {
@@ -42,11 +42,18 @@ class ImageLoader<Source, Cache>: ObservableObject where Source: ImageSource, Ca
         
         cancellable = source
             .imagePublisher()
+            .handleEvents(receiveOutput: { [weak self] image in
+                self?.cache(image)
+            })
             .map { ImageLoaderResult.success($0) }
             .catch { Just(ImageLoaderResult.failure($0)) }
             .subscribe(on: DispatchQueue.imageProcessingQueue)
             .receive(on: DispatchQueue.main)
             .sink { [weak self] in self?.result = $0 }
+    }
+    
+    private func cache(_ image: UIImage?) {
+        image.map { cache?[source.key] = $0 }
     }
 }
 

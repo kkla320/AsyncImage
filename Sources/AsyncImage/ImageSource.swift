@@ -9,7 +9,7 @@ import SwiftUI
 import Combine
 
 public protocol ImageSource {
-    associatedtype Key
+    associatedtype Key: Hashable
     
     var key: Key { get }
     
