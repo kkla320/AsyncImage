@@ -8,13 +8,13 @@
 import SwiftUI
 
 struct ImageCacheEnvironmentKey: EnvironmentKey {
-    static var defaultValue: EquatableImageCache? = nil
+    static var defaultValue: ImageCache? = nil
 }
 
 extension EnvironmentValues {
-    var imageCache: EquatableImageCache? {
+    var imageCache: ImageCache? {
         get {
-            return self[ImageCacheEnvironmentKey.self].map({ EquatableImageCache($0) })
+            return self[ImageCacheEnvironmentKey.self]
         }
         set {
             self[ImageCacheEnvironmentKey.self] = newValue

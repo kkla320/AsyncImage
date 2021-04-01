@@ -10,6 +10,6 @@ import SwiftUI
 extension View {
     public func imageCache(_ cache: ImageCache) -> some View {
         return self
-            .environment(\.imageCache, EquatableImageCache(cache))
+            .environment(\.imageCache, cache)
     }
 }

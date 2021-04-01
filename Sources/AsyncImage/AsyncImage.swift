@@ -1,7 +1,7 @@
 import SwiftUI
 
 public struct AsyncImage<Source, Content, Loading, Failure>: View where Source: ImageSource, Content: View, Loading: View, Failure: View {
-    @Environment(\.imageCache) private var imageCache: EquatableImageCache?
+    @Environment(\.imageCache) private var imageCache: ImageCache?
     
     @StateObject private var loader: ImageLoader<Source>
     
@@ -35,8 +35,8 @@ public struct AsyncImage<Source, Content, Loading, Failure>: View where Source: 
         .onAppear {
             loader.load()
         }
-        .onChange(of: imageCache) { newValue in
-            loader.cache = newValue
+        .onChange(of: imageCache?.id) { newValue in
+            loader.cache = imageCache
         }
     }
 }
