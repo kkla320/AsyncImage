@@ -16,11 +16,12 @@ class ImageLoader<Source>: ObservableObject where Source: ImageSource {
     @Published var result: ImageLoaderResult = .pending
     
     private let source: Source
-    var cache: ImageCache?
+    private var cache: ImageCache?
     private var cancellable: AnyCancellable?
     
-    init(source: Source) {
+    init(source: Source, cache: ImageCache?) {
         self.source = source
+        self.cache = cache
     }
     
     deinit {

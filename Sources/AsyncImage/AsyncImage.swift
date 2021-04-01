@@ -1,8 +1,6 @@
 import SwiftUI
 
 public struct AsyncImage<Source, Content, Loading, Failure>: View where Source: ImageSource, Content: View, Loading: View, Failure: View {
-    @Environment(\.imageCache) private var imageCache: ImageCache?
-    
     @StateObject private var loader: ImageLoader<Source>
     
     private let content: (UIImage) -> Content
@@ -15,7 +13,7 @@ public struct AsyncImage<Source, Content, Loading, Failure>: View where Source: 
         @ViewBuilder loading: @escaping () -> Loading,
         @ViewBuilder failure: @escaping (Error) -> Failure
     ) {
-        _loader = StateObject(wrappedValue: ImageLoader(source: imageSource))
+        _loader = StateObject(wrappedValue: ImageLoader(source: imageSource, cache: Environment(\.imageCache).wrappedValue))
         self.content = content
         self.loading = loading
         self.failure = failure
@@ -34,9 +32,6 @@ public struct AsyncImage<Source, Content, Loading, Failure>: View where Source: 
         }
         .onAppear {
             loader.load()
-        }
-        .onChange(of: imageCache?.id) { newValue in
-            loader.cache = imageCache
         }
     }
 }
