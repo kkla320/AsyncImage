@@ -9,7 +9,7 @@ import Combine
 import SwiftUI
 
 extension DispatchQueue {
-    static let imageProcessingQueue = DispatchQueue(label: "image-processing")
+    public static let imageProcessingQueue = DispatchQueue(label: "image-processing")
 }
 
 class ImageLoader<Source>: ObservableObject where Source: ImageSource {
