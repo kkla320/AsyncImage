@@ -20,10 +20,10 @@ public class URLImageSource: ImageSource {
         self.url = url
     }
     
-    public func imagePublisher() -> AnyPublisher<UIImage, Error> {
+    public func imagePublisher() -> AnyPublisher<Image, Error> {
         return URLSession.shared.dataTaskPublisher(for: url)
             .tryMap { response in
-                guard let image = UIImage(data: response.data) else {
+                guard let image = Image(data: response.data) else {
                     throw Errors.imageNotInitializable
                 }
                 return image

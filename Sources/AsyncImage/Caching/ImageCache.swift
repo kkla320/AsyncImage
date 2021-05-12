@@ -8,5 +8,5 @@
 import SwiftUI
 
 public protocol ImageCache {
-    subscript(key: AnyHashable) -> UIImage? { get set }
+    subscript(key: AnyHashable) -> Image? { get set }
 }

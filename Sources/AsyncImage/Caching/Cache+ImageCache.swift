@@ -8,8 +8,8 @@
 import Foundation
 import SwiftUI
 
-extension Cache: ImageCache where Key == AnyHashable, Value == UIImage {
-    public subscript(key: AnyHashable) -> UIImage? {
+extension Cache: ImageCache where Key == AnyHashable, Value == Image {
+    public subscript(key: AnyHashable) -> Image? {
         get {
             get(forKey: key)
         }

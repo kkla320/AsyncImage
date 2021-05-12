@@ -13,5 +13,5 @@ public protocol ImageSource {
     
     var key: Key { get }
     
-    func imagePublisher() -> AnyPublisher<UIImage, Error>
+    func imagePublisher() -> AnyPublisher<Image, Error>
 }

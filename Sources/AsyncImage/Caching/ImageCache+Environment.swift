@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct ImageCacheEnvironmentKey: EnvironmentKey {
-    static var defaultValue: ImageCache = Cache<AnyHashable, UIImage>()
+    static var defaultValue: ImageCache = Cache<AnyHashable, Image>()
 }
 
 extension EnvironmentValues {

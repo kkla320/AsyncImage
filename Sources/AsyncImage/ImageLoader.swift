@@ -56,7 +56,7 @@ enum ImageLoaderResult {
     case pending
     case loading
     case failure(Error)
-    case success(UIImage)
+    case success(Image)
 }
 
 extension ImageLoaderResult: Equatable {

@@ -3,13 +3,13 @@ import SwiftUI
 public struct AsyncImage<Source, Content, Loading, Failure>: View where Source: ImageSource, Content: View, Loading: View, Failure: View {
     @StateObject private var loader: ImageLoader<Source>
     
-    private let content: (UIImage) -> Content
+    private let content: (Image) -> Content
     private let loading: () -> Loading
     private let failure: (Error) -> Failure
     
     public init(
         imageSource: Source,
-        @ViewBuilder content: @escaping (UIImage) -> Content,
+        @ViewBuilder content: @escaping (Image) -> Content,
         @ViewBuilder loading: @escaping () -> Loading,
         @ViewBuilder failure: @escaping (Error) -> Failure
     ) {
@@ -39,7 +39,7 @@ public struct AsyncImage<Source, Content, Loading, Failure>: View where Source: 
 extension AsyncImage where Source == URLImageSource {
     public init(
         url: URL,
-        @ViewBuilder content: @escaping (UIImage) -> Content,
+        @ViewBuilder content: @escaping (Image) -> Content,
         @ViewBuilder loading: @escaping () -> Loading,
         @ViewBuilder failure: @escaping (Error) -> Failure
     ) {
